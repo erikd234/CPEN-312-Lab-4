@@ -86,7 +86,27 @@ shift_registers_left:
 	xch a, r7 ; r3 = 4, a = 6
 	mov r0, a
 	ret
+
+; this is the subroutine that causes a delay in the program
+wait:
+    mov 0BH, #130  ; 90 is 5AH
+L3: mov 0AH, #250 ; 250 is FAH 
+L2: mov 9H, #250
+L1: djnz 9H, L1  ; 3 machine cycles-> 3*30ns*250=22.5us
+    djnz 0AH, L2  ; 22.5us*250=5.625ms
+    djnz 0BH, L3  ; 5.625ms*90=0.506s (approximately)
+	ret
+
+start:
+	lcall initialize_registers	
+
+forever_loop:
 	
+	lcall update_displays_msd
+	lcall wait
+	lcall shift_registers_left
+	sjmp forever_loop
+
 ; subroutine that displays the six most sifnigicant digits of my student number
 display_student_number: 	
 	lcall initialize_registers
@@ -177,23 +197,6 @@ display_cpen:
 	mov hex0, #24H	; displays '2'
 	ret
 
-; this is the subroutine that causes a delay in the program
-wait:
-    mov 0BH, #130  ; 90 is 5AH
-L3: mov 0AH, #250 ; 250 is FAH 
-L2: mov 9H, #250
-L1: djnz 9H, L1  ; 3 machine cycles-> 3*30ns*250=22.5us
-    djnz 0AH, L2  ; 22.5us*250=5.625ms
-    djnz 0BH, L3  ; 5.625ms*90=0.506s (approximately)
-	ret
-
-start:
-		
-
-forever_loop:
-	
-	lcall hello_cpen
-	ljmp forever_loop 
 
 
 

@@ -12,6 +12,7 @@ BLANK equ 0FFH ; display off
 
 org 0
 
+
 mov ledra, #0H
 mov ledrb, #0H
 mov r4, #0H
@@ -20,6 +21,7 @@ clr C
 
 loop_000: ; display MSB student numbers
 	;initialize_registers
+	mov sp, #7fH ; initialize the stack! (trust me for now!)
 	mov r7, #L_7
 	mov r6, #L_6
 	mov r5, #L_5

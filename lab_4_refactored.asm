@@ -18,6 +18,13 @@ ORG 0
 	mov LEDRB, #0
 	;initialize the stack! 
 	mov sp, #7fH
+	
+	;Initialize Latch memory
+	mov LATCH_mem, #0
+	
+	; Initializing screen on start up
+	lcall display_msd 
+	
 	;jumping to the start of the program
 	ljmp loop_000
 
@@ -45,61 +52,51 @@ display_lsd:
 	mov hex1, #L_1 ; displays '5'
 	mov hex0, #L_0 ; displays '7'
 	ret	
-
-initialize_registers:
-	mov r7, #L_7
-	mov r6, #L_6
-	mov r5, #L_5
-	mov r4, #L_4 ; exhange register with 0FH
-	mov r3, #L_3
-	mov r2, #L_2 ; 7
-	mov r1, #L_1 ; 5
-	mov r0, #L_0 ; 7
-	ret
+; displays the student numbers
+; the overflow student numbers for scroll right and left are stored in register r1 and r0
+display_msd: 
+	mov hex5, #L_7 ; displays '8'
+	mov hex4, #L_6 ; displays '2'
+	mov hex3, #L_5 ; displays '9'
+	mov hex2, #L_4 ; displays '4'
+	mov hex1, #L_3 ; displays '6'
+	mov hex0, #L_2 ; displays '7'
+	mov r1, #L_1 ; store '5'
+	mov r0, #L_0 ; store '7'
+	ret	
 	
-shift_registers_left:
-	clr a
-	mov a, r0 ; r3 = 4, a = 6
-	xch a, r1
-	xch a, r2
-	xch a, r3 ; a = 8
-	xch a, r4 ; r6 = 8 a = 2
-	xch a, r5 ; r5 = 2 a = 9
-	xch a, r6 ; 0FH = 9 a = 4
-	xch a, r7 ; r3 = 4, a = 6
+; scroll student number left, r0 and r1 must be initlaized with the student number overflow
+; r7 is the store value for the left to right scroll		
+scroll_left:	
+	mov r7, HEX5
+	mov HEX5, HEX4
+	mov HEX4, HEX3
+	mov HEX3, HEX2
+	mov HEX2, HEX1
+	mov HEX1, HEX0
+	mov HEX0, r1
+	mov a, r0
+	mov r1, a	
+	mov a, r7
 	mov r0, a
 	ret
-		
-; this subroutine shifts all the data in the registers over to the right	
-shift_registers_right:
-	clr a
-	mov a, r7 ; a = 8
-	xch a, r6 ; r6 = 8 a = 2
-	xch a, r5 ; r5 = 2 a = 9
-	xch a, r4 ; 0FH = 9 a = 4
-	xch a, r3 ; r3 = 4, a = 6
-	xch a, r2 ; r3 = 4, a = 6
-	xch a, r1
-	xch a, r0
-	mov r7, a
+	
+; scroll student number right, r0 and r1 must be initlaized with the student number overflow
+; r7 is the store value for the left to right scroll
+scroll_right:
+	mov a, r0
+    mov r7, a
+    mov a, r1
+    mov r0, a
+	mov r1, hex0
+	mov hex0, hex1
+	mov hex1, hex2
+	mov hex2, hex3
+	mov hex3, hex4
+	mov hex4, hex5
+	mov hex5, r7
 	ret
-		
-; subroutine that updates the displays from the registers displaying MSD of the number
-update_displays_msd:
-	clr a
-	mov a, r7
-	mov hex5, a
-	mov a, r6
-	mov hex4, a
-	mov a, r5
-	mov hex3, a
-	mov a, r4
-	mov hex2, a
-	mov a, r3
-	mov hex1, a
-	mov a, r2
-	mov hex0, a
-	ret
+			
 	
 ; write input to LED lights 
 ; this verifies everything was latched correctly
@@ -125,19 +122,14 @@ L1: djnz 9H, L1  ; 3 machine cycles-> 3*30ns*250=22.5us
 
 ; Displays the 6 MSD of my student number
 loop_000:
-    lcall initialize_registers
 	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump to latch in the switches
 	mov a, LATCH_mem; loading latch memory to ACC
 	cjne a, #0, loop_001 ; if not 0 go to 2
-	mov hex5, #L_7 ; displays '8'
-	mov hex4, #L_6 ; displays '2'
-	mov hex3, #L_5 ; displays '9'
-	mov hex2, #L_4 ; displays '4'
-	mov hex1, #L_3 ; displays '6'
-	mov hex0, #L_2 ; displays '7'
+	lcall display_msd
 	sjmp loop_000
-	
-loop_001: ; last two student numbers
+
+; last two student numbers	
+loop_001: 
 	jnb key.3, latch_input
 	mov a, LATCH_mem; loading latch memory to ACC
 	cjne a, #1, loop_010 ; same logic as above
@@ -165,24 +157,24 @@ latch_input:
 ;********************	
 	
 ; shift student number right
-loop_010: 
-	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump to latch in the switches
+loop_010:
+	lcall display_msd  
+Y:	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump to latch in the switches
 	mov a, LATCH_mem ; loading latch memory to ACC
 	cjne a, #2, loop_011
-	lcall update_displays_msd
 	lcall wait
-	lcall shift_registers_right
-	sjmp loop_010
+	lcall scroll_right
+	sjmp y
 
 ; shift student number left
-loop_011: 
-	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump to latch in the switches
+loop_011:
+	lcall display_msd 
+Z:	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump to latch in the switches
 	mov a, LATCH_mem ; loading latch memory to ACC
 	cjne a, #3, loop_100
-	lcall update_displays_msd
 	lcall wait
-	lcall shift_registers_left
-	sjmp loop_011
+	lcall scroll_left
+	sjmp Z
 
 ; blink
 loop_100: 
@@ -243,12 +235,7 @@ loop_110:
 	; manual wait
 	lcall wait
 	jnb key.3, latch_intermidiate   ; adding responsiveness to keypress
-	mov hex5, #L_7 ; displays '8'
-	mov hex4, #L_6 ; displays '2'
-	mov hex3, #L_5 ; displays '9'
-	mov hex2, #L_4 ; displays '4'
-	mov hex1, #L_3 ; displays '6'
-	mov hex0, #L_2 ; displays '7'	
+	lcall display_msd	
 	lcall wait
 	; display_cpen
     jnb key.3, latch_intermidiate   ; adding responsiveness to keypress

@@ -10,7 +10,7 @@ L_1 equ 12H ; number 5
 L_0 equ 78H ; number 7
 BLANK equ 0FFH ; display off
 LATCH_mem equ 0FH ; memory adress for the latch
-
+DESIRED_RESULT equ 80H ; memory adress for animation for 111 case
 ORG 0
 	
 	;Turning off all the LEDs
@@ -42,6 +42,9 @@ clear_screen:
 	mov hex2, a
 	mov hex1, a
 	mov hex0, a
+	mov r7, a
+	mov r0, a
+	mov r1, a
 	ret
 	
 display_lsd: 
@@ -115,6 +118,16 @@ L1: djnz 9H, L1  ; 3 machine cycles-> 3*30ns*250=22.5us
     djnz 0AH, L2  ; 22.5us*250=5.625ms
     djnz 0BH, L3  ; 5.625ms*90=0.506s (approximately)
 	ret	
+; this is the subroutine that causes a delay in the program
+short_wait:
+    mov 0BH, #10  ; 90 is 5AH
+L4: mov 0AH, #220 ; 250 is FAH 
+L5: mov 9H, #250	
+L6: djnz 9H, L6  ; 3 machine cycles-> 3*30ns*250=22.5us
+    djnz 0AH, L5  ; 22.5us*250=5.625ms
+    djnz 0BH, L4  ; 5.625ms*90=0.506s (approximately)
+	ret	
+
 
 ;********************
 ;Loops Section
@@ -249,11 +262,13 @@ loop_110:
 	ljmp loop_110
 
 loop_111:
-	jnb key.3, latch_intermidiate ; checks the key  when key 3 is pressed we will jump to latch in the switches
+	lcall clear_screen
+j:	jnb key.3, latch_intermidiate ; checks the key  when key 3 is pressed we will jump to latch in the switches
 	mov a, LATCH_mem ; loading latch memory to ACC
 	cjne a, #7, loop_000_intermediate
-	mov hex5, #78H
-	sjmp loop_111
+	; START OF CREATIVE ANIMATION
+	ljmp set_hex5
+	sjmp j
 
 ;************************
 ; SJMP BOOSTERS
@@ -263,5 +278,511 @@ latch_intermidiate:
 
 loop_000_intermediate:
 	ljmp loop_000
+
+
+
+;***************************	
+;CREATIVE FEATURE DO NOT USE r0, r1, r7,
+; R4 will store the current result and numbers will be subtracted to this register.
+; A will be used to comppair the hex display with the finished result
+; DESIRED_RESULT is the part we wish to display for any number.
+;**************************
+
+set_hex5:
+ 	
+ 	;FINAL RESULT wWE ARE BUILING Is 8 WITCH IS (0000 0000)B
+	mov r4, #11111111B ;current result on hex5
+set_5:
+ 	mov a, #11011111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_5:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #11011111B, build_5
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_4
+	ljmp do_nothing
 	
+set_4:
+ 	mov a, #11101111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_4:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #11101111B, build_4
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_3
+	ljmp do_nothing
+	
+set_3:
+ 	mov a, #11110111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_3:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #11110111B, build_3
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_0
+	ljmp do_nothing
+
+set_0:
+ 	mov a, #11111110B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_0:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #11111110B, build_0
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_6
+	ljmp do_nothing
+	
+set_6:
+ 	mov a, #10111111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_6:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #10111111B, build_6
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_1
+	ljmp do_nothing
+	
+set_1:
+ 	mov a, #11111101B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_1:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #11111101B, build_1
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_2
+	ljmp do_nothing
+set_2:
+ 	mov a, #11111011B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_2:	
+	lcall scroll_left_to_4 
+	lcall short_wait
+	mov a, hex4 ;moving to accumulator for compairing
+	cjne a, #11111011B, build_2
+	mov hex4, #BLANK
+	anl a, hex5
+	mov hex5, a
+	cjne a, #L_7, set_hex4 ; should be equal
+	ljmp set_hex4
+	
+	
+do_nothing:
+	ljmp do_nothing
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX4
+set_hex4:
+ 	;FINAL RESULT wWE ARE BUILING Is 8 WITCH IS (0100100)B
+	
+set_4_b:
+ 	mov a, #11101111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_4_b:	
+	lcall scroll_left_to_3 
+	lcall short_wait
+	mov a, hex3 ;moving to accumulator for compairing
+	cjne a, #11101111B, build_4_b
+	mov hex3, #BLANK
+	anl a, hex4
+	mov hex4, a
+	cjne a, #L_6, set_3_b
+	ljmp do_nothing
+	
+set_3_b:
+ 	mov a, #11110111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_3_b:	
+	lcall scroll_left_to_3 
+	lcall short_wait
+	mov a, hex3 ;moving to accumulator for compairing
+	cjne a, #11110111B, build_3_b
+	mov hex3, #BLANK
+	anl a, hex4
+	mov hex4, a
+	cjne a, #L_6, set_0_b
+	ljmp do_nothing
+
+set_0_b:
+ 	mov a, #11111110B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_0_b:	
+	lcall scroll_left_to_3
+	lcall short_wait
+	mov a, hex3 ;moving to accumulator for compairing
+	cjne a, #11111110B, build_0_b
+	mov hex3, #BLANK
+	anl a, hex4
+	mov hex4, a
+	cjne a, #L_6, set_6_b
+	ljmp do_nothing
+	
+set_6_b:
+ 	mov a, #10111111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_6_b:	
+	lcall scroll_left_to_3
+	lcall short_wait
+	mov a, hex3 ;moving to accumulator for compairing
+	cjne a, #10111111B, build_6_b
+	mov hex3, #BLANK
+	anl a, hex4
+	mov hex4, a
+	cjne a, #L_6, set_1_b
+	ljmp do_nothing
+	
+set_1_b:
+ 	mov a, #11111101B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_1_b:	
+	lcall scroll_left_to_3 
+	lcall short_wait
+	mov a, hex3;moving to accumulator for compairing
+	cjne a, #11111101B, build_1_b
+	mov hex3, #BLANK
+	anl a, hex4
+	mov hex4,a
+	cjne a, #L_6, set_hex3 ;
+	ljmp set_hex3
+
+do_nothing_b:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;.;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HEX 3
+
+set_hex3:
+ 	;FINAL RESULT wWE ARE BUILING Is 8 WITCH IS (0000 0000)B
+set_5_c:
+ 	mov a, #11011111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_5_c:	
+	lcall scroll_left_to_2 
+	lcall short_wait
+	mov a, hex2 ;moving to accumulator for compairing
+	cjne a, #11011111B, build_5_c
+	mov hex2, #BLANK
+	anl a, hex3
+	mov hex3, a
+	cjne a, #L_6, set_3_c ;; should not equal
+	ljmp do_nothing
+		
+set_3_c:
+ 	mov a, #11110111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_3_c:	
+	lcall scroll_left_to_2 
+	lcall short_wait
+	mov a, hex2 ;moving to accumulator for compairing
+	cjne a, #11110111B, build_3_c
+	mov hex2, #BLANK
+	anl a, hex3
+	mov hex3, a
+	cjne a, #L_6, set_0_c
+	ljmp do_nothing
+
+set_0_c:
+ 	mov a, #11111110B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_0_c:	
+	lcall scroll_left_to_2
+	lcall short_wait
+	mov a, hex2 ;moving to accumulator for compairing
+	cjne a, #11111110B, build_0_c
+	mov hex2, #BLANK
+	anl a, hex3
+	mov hex3, a
+	cjne a, #L_6, set_6_c
+	ljmp do_nothing
+	
+set_6_c:
+ 	mov a, #10111111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_6_c:	
+	lcall scroll_left_to_2
+	lcall short_wait
+	mov a, hex2 ;moving to accumulator for compairing
+	cjne a, #10111111B, build_6_c
+	mov hex2, #BLANK
+	anl a, hex3
+	mov hex3, a
+	cjne a, #L_6, set_1_c
+	ljmp do_nothing
+	
+set_1_c:
+ 	mov a, #11111101B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_1_c:	
+	lcall scroll_left_to_2
+	lcall short_wait
+	mov a, hex2 ;moving to accumulator for compairing
+	cjne a, #11111101B, build_1_c
+	mov hex2, #BLANK
+	anl a, hex3
+	mov hex3, a
+	cjne a, #L_6, set_2_c
+	ljmp do_nothing
+set_2_c:
+ 	mov a, #11111011B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_2_c:	
+	lcall scroll_left_to_2 
+	lcall short_wait
+	mov a, hex2 ;moving to accumulator for compairing
+	cjne a, #11111011B, build_2_c
+	mov hex2, #BLANK
+	anl a, hex3
+	mov hex3, a
+	cjne a, #L_6, set_hex2; should be equal
+	ljmp set_hex2
+	
+	
+do_nothing_c:
+	ljmp do_nothing
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX2
+
+set_hex2:
+ 	
+ 	;FINAL RESULT wWE ARE BUILING Is 8 WITCH IS (0000 0000)B
+	mov r4, #11111111B ;current result on hex5
+set_5_d:
+ 	mov a, #11011111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_5_d:	
+	lcall scroll_left_to_1 
+	lcall short_wait
+	mov a, hex1 ;moving to accumulator for compairing
+	cjne a, #11011111B, build_5_d
+	mov hex1, #BLANK
+	anl a, hex2
+	mov hex2, a
+	cjne a, #L_7, set_6_d
+	ljmp do_nothing
+	
+set_6_d:
+ 	mov a, #10111111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_6_d:	
+	lcall scroll_left_to_1 
+	lcall short_wait
+	mov a, hex1 ;moving to accumulator for compairing
+	cjne a, #10111111B, build_6_d
+	mov hex1, #BLANK
+	anl a, hex2
+	mov hex2, a
+	cjne a, #L_7, set_1_d
+	ljmp do_nothing
+	
+set_1_d:
+ 	mov a, #11111101B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_1_d:	
+	lcall scroll_left_to_1
+	lcall short_wait
+	mov a, hex1 ;moving to accumulator for compairing
+	cjne a, #11111101B, build_1_d
+	mov hex1, #BLANK
+	anl a, hex2
+	mov hex2, a
+	cjne a, #L_7, set_2_d
+	ljmp do_nothing
+set_2_d:
+ 	mov a, #11111011B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_2_d:	
+	lcall scroll_left_to_1 
+	lcall short_wait
+	mov a, hex1 ;moving to accumulator for compairing
+	cjne a, #11111011B, build_2_d
+	mov hex1, #BLANK
+	anl a, hex2
+	mov hex2, a
+	ljmp set_hex1
+
+do_nothing_d:
+	ljmp do_nothing
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX1
+; Displaying 6	
+set_hex1:
+ 	
+ 	;FINAL RESULT wWE ARE BUILING Is 8 WITCH IS (0000 0000)B
+	mov r4, #11111111B ;current result on hex5
+set_5_e:
+ 	mov a, #11011111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_5_e:	
+	lcall short_wait
+	mov a, hex0 ;moving to accumulator for compairing
+	cjne a, #11011111B, build_5_e
+	mov hex0, #BLANK
+	anl a, hex1
+	mov hex1, a
+	cjne a, #L_7, set_4_e
+	ljmp do_nothing
+	
+set_4_e:
+ 	mov a, #11101111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+	lcall short_wait
+
+build_4_e:	
+	lcall short_wait
+	mov a, hex0 ;moving to accumulator for compairing
+	cjne a, #11101111B, build_4_e
+	mov hex0, #BLANK
+	anl a, hex1
+	mov hex1, a
+	cjne a, #L_7, set_3_e
+	ljmp do_nothing
+	
+set_3_e:
+ 	mov a, #11110111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_3_e:	
+	lcall short_wait
+	mov a, hex0 ;moving to accumulator for compairing
+	cjne a, #11110111B, build_3_e
+	mov hex0, #BLANK
+	anl a, hex1
+	mov hex1, a
+	cjne a, #L_7, set_0_e
+	ljmp do_nothing
+
+set_0_e:
+ 	mov a, #11111110B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_0_e:	 
+	lcall short_wait
+	mov a, hex0 ;moving to accumulator for compairing
+	cjne a, #11111110B, build_0_e
+	mov hex0, #BLANK
+	anl a, hex1
+	mov hex1, a
+	cjne a, #L_7, set_6_e
+	ljmp do_nothing
+	
+set_6_e:
+ 	mov a, #10111111B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_6_e:	
+	lcall short_wait
+	mov a, hex0 ;moving to accumulator for compairing
+	cjne a, #10111111B, build_6_e
+	mov hex0, #BLANK
+	anl a, hex1
+	mov hex1, a
+	ljmp set_2_e
+	
+set_2_e:
+ 	mov a, #11111011B ; load up scroll with the segment we wish to build
+	mov hex0, a
+
+build_2_e:	 
+	lcall short_wait
+	mov a, hex0 ;moving to accumulator for compairing
+	cjne a, #11111011B, build_2_e
+	mov hex0, #BLANK
+	anl a, hex1
+	mov hex1, a
+	cjne a, #L_7, set_hex0
+	ljmp set_hex0
+
+	
+do_nothing_e:
+	ljmp do_nothing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX0
+; ANIMATING number 7 - wow I finally did it
+set_hex0:
+	
+ 	mov hex0, #BLANK
+ 	lcall short_wait
+	mov hex0, #01111011B
+	lcall short_wait
+	mov hex0, #01111001B
+	lcall short_wait
+	mov hex0, #01111000B
+ 	lcall short_wait
+ 	lcall wait
+ 	lcall clear_screen
+ 	lcall wait
+	ljmp loop_111 ;; go back to start
+;*********
+; ANIMATION SUBSROUTINE
+;==============
+
+scroll_left_to_4:	
+	mov HEX4, HEX3
+	mov HEX3, HEX2
+	mov HEX2, HEX1
+	mov HEX1, HEX0
+	mov hex0, #BLANK
+	ret
+scroll_left_to_3:	
+	mov HEX3, HEX2
+	mov HEX2, HEX1
+	mov HEX1, HEX0
+	mov hex0, #BLANK
+	ret
+scroll_left_to_2:	
+	mov HEX2, HEX1
+	mov HEX1, HEX0
+	mov hex0, #BLANK
+	ret
+scroll_left_to_1:	
+	mov HEX1, HEX0
+	mov hex0, #BLANK
+	ret
 end

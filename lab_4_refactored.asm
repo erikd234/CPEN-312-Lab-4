@@ -176,7 +176,7 @@ Y:	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump t
 	mov a, LATCH_mem ; loading latch memory to ACC
 	cjne a, #2, loop_011
 	lcall wait
-	lcall scroll_right
+	lcall scroll_left
 	sjmp y
 
 ; shift student number left
@@ -186,7 +186,7 @@ Z:	jnb key.3, latch_input ; checks the key  when key 3 is pressed we will jump t
 	mov a, LATCH_mem ; loading latch memory to ACC
 	cjne a, #3, loop_100
 	lcall wait
-	lcall scroll_left
+	lcall scroll_right
 	sjmp Z
 
 ; blink
@@ -296,7 +296,7 @@ set_5:
  	mov a, #11011111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate
 build_5:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -306,13 +306,13 @@ build_5:
 	anl a, hex5
 	mov hex5, a
 	cjne a, #L_7, set_4
-	ljmp do_nothing
+	ljmp set_4
 	
 set_4:
  	mov a, #11101111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate
 build_4:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -322,12 +322,13 @@ build_4:
 	anl a, hex5
 	mov hex5, a
 	cjne a, #L_7, set_3
-	ljmp do_nothing
+	ljmp set_3
 	
 set_3:
+
  	mov a, #11110111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate
 build_3:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -337,12 +338,12 @@ build_3:
 	anl a, hex5
 	mov hex5, a
 	cjne a, #L_7, set_0
-	ljmp do_nothing
-
+	ljmp set_0
+	
 set_0:
  	mov a, #11111110B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate
 build_0:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -352,12 +353,12 @@ build_0:
 	anl a, hex5
 	mov hex5, a
 	cjne a, #L_7, set_6
-	ljmp do_nothing
+	ljmp set_6
 	
 set_6:
  	mov a, #10111111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_2
 build_6:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -367,12 +368,12 @@ build_6:
 	anl a, hex5
 	mov hex5, a
 	cjne a, #L_7, set_1
-	ljmp do_nothing
+	ljmp set_1
 	
 set_1:
  	mov a, #11111101B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_2
 build_1:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -382,11 +383,11 @@ build_1:
 	anl a, hex5
 	mov hex5, a
 	cjne a, #L_7, set_2
-	ljmp do_nothing
+	ljmp set_2
 set_2:
  	mov a, #11111011B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_2
 build_2:	
 	lcall scroll_left_to_4 
 	lcall short_wait
@@ -398,9 +399,12 @@ build_2:
 	cjne a, #L_7, set_hex4 ; should be equal
 	ljmp set_hex4
 	
-	
-do_nothing:
-	ljmp do_nothing
+;************************
+; SJMP BOOSTERS
+;************************
+latch_intermidiate_2:
+	ljmp latch_input
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX4
 set_hex4:
@@ -410,7 +414,7 @@ set_4_b:
  	mov a, #11101111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate_2
 build_4_b:	
 	lcall scroll_left_to_3 
 	lcall short_wait
@@ -420,12 +424,12 @@ build_4_b:
 	anl a, hex4
 	mov hex4, a
 	cjne a, #L_6, set_3_b
-	ljmp do_nothing
+	ljmp set_3_b
 	
 set_3_b:
  	mov a, #11110111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_2
 build_3_b:	
 	lcall scroll_left_to_3 
 	lcall short_wait
@@ -435,12 +439,12 @@ build_3_b:
 	anl a, hex4
 	mov hex4, a
 	cjne a, #L_6, set_0_b
-	ljmp do_nothing
+	ljmp set_0_b
 
 set_0_b:
  	mov a, #11111110B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_2
 build_0_b:	
 	lcall scroll_left_to_3
 	lcall short_wait
@@ -450,12 +454,12 @@ build_0_b:
 	anl a, hex4
 	mov hex4, a
 	cjne a, #L_6, set_6_b
-	ljmp do_nothing
+	ljmp set_6_b
 	
 set_6_b:
  	mov a, #10111111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_2
 build_6_b:	
 	lcall scroll_left_to_3
 	lcall short_wait
@@ -465,12 +469,12 @@ build_6_b:
 	anl a, hex4
 	mov hex4, a
 	cjne a, #L_6, set_1_b
-	ljmp do_nothing
+	ljmp set_1_b
 	
 set_1_b:
  	mov a, #11111101B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_3
 build_1_b:	
 	lcall scroll_left_to_3 
 	lcall short_wait
@@ -482,7 +486,12 @@ build_1_b:
 	cjne a, #L_6, set_hex3 ;
 	ljmp set_hex3
 
-do_nothing_b:
+;************************
+; SJMP BOOSTERS
+;************************
+latch_intermidiate_3:
+	ljmp latch_input
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;.;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;HEX 3
 
 set_hex3:
@@ -491,7 +500,7 @@ set_5_c:
  	mov a, #11011111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate_3
 build_5_c:	
 	lcall scroll_left_to_2 
 	lcall short_wait
@@ -501,12 +510,12 @@ build_5_c:
 	anl a, hex3
 	mov hex3, a
 	cjne a, #L_6, set_3_c ;; should not equal
-	ljmp do_nothing
+	ljmp set_3_c
 		
 set_3_c:
  	mov a, #11110111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_3
 build_3_c:	
 	lcall scroll_left_to_2 
 	lcall short_wait
@@ -516,12 +525,12 @@ build_3_c:
 	anl a, hex3
 	mov hex3, a
 	cjne a, #L_6, set_0_c
-	ljmp do_nothing
-
+	ljmp set_0_c
+	
 set_0_c:
  	mov a, #11111110B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_3
 build_0_c:	
 	lcall scroll_left_to_2
 	lcall short_wait
@@ -531,12 +540,12 @@ build_0_c:
 	anl a, hex3
 	mov hex3, a
 	cjne a, #L_6, set_6_c
-	ljmp do_nothing
-	
+	ljmp set_6_c
+		
 set_6_c:
  	mov a, #10111111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_3
 build_6_c:	
 	lcall scroll_left_to_2
 	lcall short_wait
@@ -546,12 +555,12 @@ build_6_c:
 	anl a, hex3
 	mov hex3, a
 	cjne a, #L_6, set_1_c
-	ljmp do_nothing
+	ljmp set_1_c
 	
 set_1_c:
  	mov a, #11111101B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_4
 build_1_c:	
 	lcall scroll_left_to_2
 	lcall short_wait
@@ -561,11 +570,11 @@ build_1_c:
 	anl a, hex3
 	mov hex3, a
 	cjne a, #L_6, set_2_c
-	ljmp do_nothing
+	ljmp set_2_c
 set_2_c:
  	mov a, #11111011B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_4
 build_2_c:	
 	lcall scroll_left_to_2 
 	lcall short_wait
@@ -577,10 +586,11 @@ build_2_c:
 	cjne a, #L_6, set_hex2; should be equal
 	ljmp set_hex2
 	
-	
-do_nothing_c:
-	ljmp do_nothing
-
+;************************
+; SJMP BOOSTERS
+;************************
+latch_intermidiate_4:
+	ljmp latch_input
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX2
 
 set_hex2:
@@ -591,7 +601,7 @@ set_5_d:
  	mov a, #11011111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate_4
 build_5_d:	
 	lcall scroll_left_to_1 
 	lcall short_wait
@@ -601,12 +611,12 @@ build_5_d:
 	anl a, hex2
 	mov hex2, a
 	cjne a, #L_7, set_6_d
-	ljmp do_nothing
+	ljmp set_6_d
 	
 set_6_d:
  	mov a, #10111111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_4
 build_6_d:	
 	lcall scroll_left_to_1 
 	lcall short_wait
@@ -616,12 +626,12 @@ build_6_d:
 	anl a, hex2
 	mov hex2, a
 	cjne a, #L_7, set_1_d
-	ljmp do_nothing
+	ljmp set_1_d
 	
 set_1_d:
  	mov a, #11111101B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_4
 build_1_d:	
 	lcall scroll_left_to_1
 	lcall short_wait
@@ -631,11 +641,11 @@ build_1_d:
 	anl a, hex2
 	mov hex2, a
 	cjne a, #L_7, set_2_d
-	ljmp do_nothing
+	ljmp set_2_d
 set_2_d:
  	mov a, #11111011B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_4
 build_2_d:	
 	lcall scroll_left_to_1 
 	lcall short_wait
@@ -646,9 +656,12 @@ build_2_d:
 	mov hex2, a
 	ljmp set_hex1
 
-do_nothing_d:
-	ljmp do_nothing
-	
+
+;************************
+; SJMP BOOSTERS
+;************************
+latch_intermidiate_5:
+	ljmp latch_input	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX1
 ; Displaying 6	
 set_hex1:
@@ -659,7 +672,7 @@ set_5_e:
  	mov a, #11011111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate_5
 build_5_e:	
 	lcall short_wait
 	mov a, hex0 ;moving to accumulator for compairing
@@ -668,13 +681,13 @@ build_5_e:
 	anl a, hex1
 	mov hex1, a
 	cjne a, #L_7, set_4_e
-	ljmp do_nothing
+	ljmp set_4_e
 	
 set_4_e:
  	mov a, #11101111B ; load up scroll with the segment we wish to build
 	mov hex0, a
 	lcall short_wait
-
+	jnb key.3, latch_intermidiate_5
 build_4_e:	
 	lcall short_wait
 	mov a, hex0 ;moving to accumulator for compairing
@@ -683,12 +696,12 @@ build_4_e:
 	anl a, hex1
 	mov hex1, a
 	cjne a, #L_7, set_3_e
-	ljmp do_nothing
+	ljmp set_3_e
 	
 set_3_e:
  	mov a, #11110111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_5
 build_3_e:	
 	lcall short_wait
 	mov a, hex0 ;moving to accumulator for compairing
@@ -697,12 +710,12 @@ build_3_e:
 	anl a, hex1
 	mov hex1, a
 	cjne a, #L_7, set_0_e
-	ljmp do_nothing
+	ljmp set_0_e
 
 set_0_e:
  	mov a, #11111110B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_5
 build_0_e:	 
 	lcall short_wait
 	mov a, hex0 ;moving to accumulator for compairing
@@ -711,12 +724,12 @@ build_0_e:
 	anl a, hex1
 	mov hex1, a
 	cjne a, #L_7, set_6_e
-	ljmp do_nothing
+	ljmp set_6_e
 	
 set_6_e:
  	mov a, #10111111B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_6
 build_6_e:	
 	lcall short_wait
 	mov a, hex0 ;moving to accumulator for compairing
@@ -729,7 +742,7 @@ build_6_e:
 set_2_e:
  	mov a, #11111011B ; load up scroll with the segment we wish to build
 	mov hex0, a
-
+	jnb key.3, latch_intermidiate_6
 build_2_e:	 
 	lcall short_wait
 	mov a, hex0 ;moving to accumulator for compairing
@@ -739,14 +752,19 @@ build_2_e:
 	mov hex1, a
 	cjne a, #L_7, set_hex0
 	ljmp set_hex0
-
 	
-do_nothing_e:
-	ljmp do_nothing
+
+
+;************************
+; SJMP BOOSTERS
+;************************
+latch_intermidiate_6:
+	ljmp latch_input
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; HEX0
 ; ANIMATING number 7 - wow I finally did it
 set_hex0:
-	
+	jnb key.3, latch_intermidiate_6
  	mov hex0, #BLANK
  	lcall short_wait
 	mov hex0, #01111011B
